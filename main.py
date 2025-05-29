@@ -16,6 +16,11 @@ class Post(BaseModel):
 my_posts = [{"title": "Title of post1", "content": "Content of post1", "id":1},
             {"title": "Favourite foods", "content": "i liek pizza", "id":2}]
 
+def find_post(id):  #  stoopid method
+    for p in my_posts:
+        if p["id"] == id: 
+            return p
+
 @app.get("/")
 def root():
     return {"message": "welkem to my api"}
@@ -31,3 +36,7 @@ def create_posts(post: Post): # schema, validation
     my_posts.append(post_dict)
     return {"post": post_dict}
 
+@app.get("/posts/{id}")
+def get_post(id: int):  # converts to int
+    post = find_post(id)
+    return {"post": post}
