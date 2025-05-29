@@ -15,10 +15,14 @@ class Post(BaseModel):
 my_posts = [{"title": "Title of post1", "content": "Content of post1", "id":1},
             {"title": "Favourite foods", "content": "i liek pizza", "id":2}]
 
-def find_post(id):  #  stoopid method
-    for p in my_posts:
-        if p["id"] == id: 
-            return p
+def find_post(id):
+    post_index = {p["id"]: p for p in my_posts}  # dictionary lookup
+    return post_index.get(id)
+
+def find_index_post(id):
+    for i, p in enumerate(my_posts):
+        if p["id"] == id:
+            return i
 
 @app.get("/")
 def root():
@@ -44,3 +48,12 @@ def get_post(id: int):  # response:Response
         # response.status_code = status.HTTP_404_NOT_FOUND  # no hardcoding in a number
         # return {"messgae":f"post with id {id} was not found"}
     return {"post": post}
+
+@app.delete("/posts/{id}", status_code= status.HTTP_204_NO_CONTENT)
+def delete_post(id:int):
+    index = find_index_post(id)
+    if not index:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"post with id {id} was not found")
+    post = my_posts.pop(index)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
