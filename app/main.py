@@ -28,15 +28,6 @@ while True:
 my_posts = [{"title": "Title of post1", "content": "Content of post1", "id":1},
             {"title": "Favourite foods", "content": "i liek pizza", "id":2}]
 
-def find_post(id):
-    post_index = {p["id"]: p for p in my_posts}  # dictionary lookup
-    return post_index.get(id)
-
-def find_index_post(id):
-    for i, p in enumerate(my_posts):
-        if p["id"] == id:
-            return i
-
 @app.get("/")
 def root():
     return {"message": "welkem to my api"}
@@ -75,11 +66,11 @@ def delete_post(id:int):
 
 @app.put("/posts/{id}")
 def update_post(id:int,post:Post):
-    index = find_index_post(id)
-    if index == None:
+    cursor.execute("""UPDATE posts SET (title, content, published) = (%s, %s, %s) WHERE id = %s RETURNING *""", 
+                   (post.title, post.content, post.published, id))
+    post = cursor.fetchone()
+    conn.commit()
+    if post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id {id} was not found")
-    post_dict = post.model_dump()
-    post_dict["id"] = id
-    my_posts[index] = post_dict
-    return {"data" : post_dict}
+    return {"data" : post}
