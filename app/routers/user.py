@@ -3,9 +3,12 @@ from .. import models, schemas, utils
 from ..database import get_db
 from sqlalchemy.orm import Session
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/users",
+    tags=["Users"]
+)
 
-@router.post("/users", status_code = status.HTTP_201_CREATED, response_model = schemas.UserOut)
+@router.post("/", status_code = status.HTTP_201_CREATED, response_model = schemas.UserOut)
 def create_posts(user: schemas.UserCreate, db: Session = Depends(get_db)): #dosnt validate repeated email
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
@@ -15,7 +18,7 @@ def create_posts(user: schemas.UserCreate, db: Session = Depends(get_db)): #dosn
     db.refresh(new_user)
     return new_user
 
-@router.get("/users/{id}", response_model = schemas.UserOut)
+@router.get("/{id}", response_model = schemas.UserOut)
 def get_user(id:int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.Post.id == id).first()
     if not user:
