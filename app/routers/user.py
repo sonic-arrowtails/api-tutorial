@@ -13,10 +13,13 @@ def create_posts(user: schemas.UserCreate, db: Session = Depends(get_db)): #dosn
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
     new_user = models.User(**user.model_dump())
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+    try: #temp
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        return new_user
+    except: 
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ts email alr exist twin")
 
 @router.get("/{id}", response_model = schemas.UserOut)
 def get_user(id:int, db: Session = Depends(get_db)):
