@@ -37,5 +37,5 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
                                          detail = "Could not validate credentials",
                                          headers= {"WWW-Authenticate": "Bearer"})
     token_data = verify_access_token(token,credentials_exception)
-    user = db.query(models.User).filter(models.User.id == token_data.id).first
+    user = db.query(models.User).filter(models.User.id == token_data.id).first() # bug occurs if the token is invalid, logged in as a user that doesnt exist
     return user
