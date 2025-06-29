@@ -36,6 +36,13 @@ class Post(PostBase):
     class Config:
         from_attributes = True # orm_mode
 
+class PostOut(BaseModel): #with votes, table join
+    Post: Post
+    votes: int
+
+    class Config:
+        from_attributes = True
+
 class Token(BaseModel):
     access_token: str
     token_type: str
