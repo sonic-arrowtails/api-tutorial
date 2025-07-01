@@ -1,5 +1,5 @@
 """add columns to posts table
-4
+
 Revision ID: a80aa9ac2d9f
 Revises: a079690fc1b0
 Create Date: 2025-07-01 15:23:19.771641

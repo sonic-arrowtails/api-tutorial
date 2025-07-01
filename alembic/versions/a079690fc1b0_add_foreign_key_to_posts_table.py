@@ -1,8 +1,5 @@
 """add foreign key to posts table
 
-3rd 
-
-
 Revision ID: a079690fc1b0
 Revises: f51c04184f08
 Create Date: 2025-07-01 15:17:02.087458
