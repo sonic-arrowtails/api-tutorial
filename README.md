@@ -1,2 +1,5 @@
-Social media type API
-python fastapi postgresql alembic NGINX stuff
+# Social media type API
+
+tutorial:
+
+<https://www.youtube.com/watch?v=0sOvCWFmrtA>  
