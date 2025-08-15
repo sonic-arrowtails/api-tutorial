@@ -1,5 +1,5 @@
 import pytest
-from app.calculations import add, subtract, multiply, divide, BankAccount
+from app.calculations import add, subtract, multiply, divide, BankAccount, InsufficientFunds
 
 @pytest.fixture
 def zero_bank_account():
@@ -46,3 +46,7 @@ def test_stuff(zero_bank_account, dep, withd, expected):
     zero_bank_account.deposit(dep)
     zero_bank_account.withdraw(withd)
     assert zero_bank_account.balance == expected
+
+def test_insiuficient_funds(bank_account):
+    with pytest.raises(InsufficientFunds):
+        bank_account.withdraw(51)
