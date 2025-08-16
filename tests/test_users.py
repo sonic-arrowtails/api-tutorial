@@ -1,55 +1,42 @@
-from fastapi.testclient import TestClient
 from app import schemas
-from app.main import app
-from app.database import get_db, Base
-from app.config import settings
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from .database import client, session
 import pytest
-
-
-# can be hardcoded because it's a testing db
-SQLALCHEMY_DATABASE_URL = f'postgresql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}_test'
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind = engine)
-
-
-
-
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
-
+from jose import jwt
+from app.config import settings
 
 @pytest.fixture
-def client(): 
-    Base.metadata.drop_all(bind=engine) # if test fails with pytest -x, the tables remain
-    Base.metadata.create_all(bind=engine)  # create testing db tables
+def test_user(client):
+    # print("\ni created a test client")
+    user_data = {"email":"slender@man.gg","password":"forget-me-not"}
+    res = client.post("/users/",json=user_data)
+    assert res.status_code == 201
 
-    # import alembic command,
-    # command.upgrade("head")
-    # command.downgrade("base")
-
-    yield TestClient(app) # code can run both before and after the test runs
-
+    new_user = res.json()
+    new_user["password"] = user_data["password"]
+    return new_user
 
 def test_root(client):
     res = client.get("/")
-    print(res.json())
+    # print(res.json())
     assert res.json().get("message") == "change change change chasnge"
     assert res.status_code == 200
 
-def test_create_user(client):
-    res =  client.post("/users/", json={"email":"slender@man.gg","password":"forget-me-not"})
+
+def test_create_user(client):  # no trailing / in path leads to 307 redirect intstead of 201
+    res = client.post("/users/", json={"email":"slender@man.gg","password":"forget-me-not"})
     print(res.json())
     new_user = schemas.UserOut(**res.json())
     assert new_user.email == "slender@man.gg"
     assert res.status_code == 201
+
+def test_login_user(client,test_user):
+    res = client.post("/login", data={"username":test_user["email"],"password":test_user["password"]})
+
+    assert res.status_code == 200
+
+    login_res = schemas.Token(**res.json())
+
+    payload = jwt.decode(login_res.access_token, settings.secret_key, algorithms=[settings.algorithm])
+    id : str = payload.get("user_id")
+    assert id == test_user["id"]
+    assert login_res.token_type == "bearer"
