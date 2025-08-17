@@ -1,19 +1,7 @@
 from app import schemas
-from .database import client, session
-import pytest
 from jose import jwt
 from app.config import settings
-
-@pytest.fixture
-def test_user(client):
-    # print("\ni created a test client")
-    user_data = {"email":"slender@man.gg","password":"forget-me-not"}
-    res = client.post("/users/",json=user_data)
-    assert res.status_code == 201
-
-    new_user = res.json()
-    new_user["password"] = user_data["password"]
-    return new_user
+import pytest
 
 def test_root(client):
     res = client.get("/")
@@ -40,3 +28,13 @@ def test_login_user(client,test_user):
     id : str = payload.get("user_id")
     assert id == test_user["id"]
     assert login_res.token_type == "bearer"
+
+@pytest.mark.parametrize("email, password, status_code", [("slender@man.gg","wrongpassword",403),
+                                                          ("wrong@email.com","wrong pw", 403),
+                                                          (None,"wrongpw",403), # 422?
+                                                          ("bademailformat","wrongpw",403), #422?
+                                                          ("wrong@emai.l",None,403)]) #422?
+def test_incorrect_login(client,test_user, email, password, status_code):
+    res = client.post("/login", data={"username":email,"password":password})
+    assert res.status_code == status_code
+    # assert res.json().get("detail") == "invalid credentials"
