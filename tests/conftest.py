@@ -1,10 +1,11 @@
+import pytest
+from app import models
 from app.main import app
-from app.database import get_db, Base
 from app.config import settings
 from sqlalchemy import create_engine
+from app.database import get_db, Base
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
-import pytest
 from app.oauth2 import create_access_token
 
 
@@ -66,3 +67,22 @@ def authorized_client(client, token):
         "Authorization":f"Bearer {token}"
     }
     return client
+
+@pytest.fixture
+def test_posts(test_user, session):
+    posts_data = [
+        {"title":"First Victim","content":"Little Timmy who went out to play in the forest after dark","owner_id":test_user["id"]},
+        {"title":"Dear basement dweller","content":"plsse hang yourself please please please please please","owner_id":test_user["id"]},
+        {"title":"there is no joke","content":"get in the femur breaker","owner_id":test_user["id"]}
+        ]
+    
+    def create_post_model(post):
+        return models.Post(**post)
+
+    posts = list(map(create_post_model, posts_data))
+
+    session.add_all(posts)
+    session.commit()
+    
+    posts = session.query(models.Post).order_by(models.Post.id).all()
+    return posts
