@@ -10,7 +10,14 @@ jobs:
   job_named_bob:
     runs-on: ubuntu-latest
     steps:
-      - name: pulling git repo
+      - name: Pulling git repo
         uses: actions/checkout@v2
-      - name: testetsetststst
-        run: echo "your lighsaber will make a fine addition to my collection"
+      - name: Install Python v3.13
+        uses: actions/setup-python@v2
+        with: 
+          python-version: "3.13"
+      - name: Update pip
+        run: python -m pip install --upgrade pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+  
