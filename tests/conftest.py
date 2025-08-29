@@ -54,7 +54,16 @@ def test_user(client):
     new_user["password"] = user_data["password"]
     return new_user
 
+@pytest.fixture
+def test_user2(client):
+    # print("\ni created a test client")
+    user_data = {"email":"spider@man.gg","password":"forget-me-neither"}
+    res = client.post("/users/",json=user_data)
+    assert res.status_code == 201
 
+    new_user = res.json()
+    new_user["password"] = user_data["password"]
+    return new_user
 
 @pytest.fixture
 def token(test_user):
@@ -69,11 +78,12 @@ def authorized_client(client, token):
     return client
 
 @pytest.fixture
-def test_posts(test_user, session):
+def test_posts(test_user, test_user2, session):
     posts_data = [
         {"title":"First Victim","content":"Little Timmy who went out to play in the forest after dark","owner_id":test_user["id"]},
         {"title":"Dear basement dweller","content":"plsse hang yourself please please please please please","owner_id":test_user["id"]},
-        {"title":"there is no joke","content":"get in the femur breaker","owner_id":test_user["id"]}
+        {"title":"there is no joke","content":"get in the femur breaker","owner_id":test_user["id"]},
+        {"title":"Hayy girl are you a microwave","content":"gbecause i want to put a child in you","owner_id":test_user2["id"]}
         ]
     
     def create_post_model(post):
